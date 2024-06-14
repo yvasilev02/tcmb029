@@ -1,0 +1,28 @@
+version: '3.8'
+
+services:
+  mininet:
+    image: mininet-nbu:latest
+    depends_on:
+       floodlight:
+          condition: service_healthy
+    privileged: true
+    environment:
+      - CONTROLLER_IP=floodlight0
+      - CONTROLLER_PORT=6653
+      - NUM_SWITCHES=1
+      - NUM_HOSTS=1
+    command: tail -f /dev/null  # Keep the container running for debugging
+
+  floodlight:
+    container_name: floodlight0
+    image: floodlight-nbu:latest
+    ports:
+      - "6653:6653"  # OpenFlow port
+      - "18080:8080"  # Floodlight REST API    
+    healthcheck:
+        test: ["CMD", "curl", "-f", "localhost:8080/wm/core/controller/summary/json"]
+        interval: 30s
+        timeout: 10s
+        retries: 5
+

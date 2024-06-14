@@ -1,0 +1,27 @@
+# Dockerfile.mininet
+FROM ubuntu:20.04
+
+# Avoid interactive package configuration prompts
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install dependencies
+RUN apt-get update && \
+    apt-get install -y git python3 python3-pip openvswitch-switch openvswitch-common net-tools iproute2 iputils-ping vim sudo
+
+# Install Mininet
+RUN git clone https://github.com/mininet/mininet.git /mininet && \
+    /mininet/util/install.sh -nv
+
+# Add Mininet to the PYTHONPATH
+ENV PYTHONPATH="/mininet:$PYTHONPATH"
+
+# Verify Mininet installation
+RUN python3 -c "import mininet; print('Mininet installed successfully')"
+
+# Copy the custom topology script to the container
+COPY scripts/custom_topology.py /scripts/custom_topology.py
+# Set the working directory
+WORKDIR /scripts
+
+# Run the custom topology script
+CMD ["python3", "custom_topology.py"]
